@@ -103,13 +103,6 @@ public class VendorActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged: is signed_in:" + user.getUid());
-                    // Start home screen fragment after user is signed in
-                    Fragment frag = new OffersRecFragment();
-                    FragmentManager manager = getSupportFragmentManager();
-                    manager.beginTransaction()
-                            .replace(R.id.content_vendor, frag)
-                            .addToBackStack(null)
-                            .commit();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged: is signed_out");
