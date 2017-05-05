@@ -21,6 +21,10 @@
             android:id="@+id/nav_push_promos"
             android:icon="@drawable/ic_money_box_black_24dp"
             android:title="Push Promos"/>
+
+        <item
+            android:id="@+id/nav_update_details"
+            android:title="Update Details"/>
     </group>
 
 </menu>

@@ -93,6 +93,7 @@ public class VendorActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged: is signed_in:" + user.getUid());
+                    createDetails();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged: is signed_out");
@@ -206,6 +207,42 @@ public class VendorActivity extends AppCompatActivity
         Log.d(TAG, "createCard: end");
     }
 
+    private void createDetails() {
+        Log.d(TAG, "createDetails: start");
+        final String Uid = mFirebaseAuth.getCurrentUser().getUid();
+        final Query query = FirebaseDatabase.getInstance().getReference().child("Vendor");
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                //checks if current signed in users UID exists in Vendor
+                if (snapshot.hasChild(Uid)) {
+
+                    Log.d(TAG, "createDetails: exists");
+                    //if no child with the same UID exists the user is prompted to create a new one
+                } else {
+                    Log.d(TAG, "createDetails: creating");
+                    launchVendorFragment();
+
+                }
+
+                Log.d(TAG, "createDetails: end");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+        });
+    }
+
+    //Calls the launchVendorDetailsActivity which will prompt the user with text fields, changes made will be added to the database
+    public void updateDetails() {
+        launchVendorFragment();
+
+    }
+
+
     // On resuming activity
     @Override
     protected void onResume() {
@@ -280,6 +317,12 @@ public class VendorActivity extends AppCompatActivity
             case R.id.nav_push_promos:
                 Toast.makeText(getApplicationContext(), "Push Promos Pressed", Toast.LENGTH_SHORT).show();
                 break;
+
+            case R.id.nav_update_details:
+                // Launches Your Fragment
+                current = new AddDetailFragment();;
+                break;
+
             case R.id.nav_sign_out:
                 // FirebaseUI Sign Out
                 AuthUI.getInstance().signOut(this);
@@ -297,4 +340,14 @@ public class VendorActivity extends AppCompatActivity
         return true;
     }
 
+    private void launchVendorFragment() {
+        Fragment frag = new AddDetailFragment();
+        FragmentManager manager = getSupportFragmentManager();
+        manager.beginTransaction()
+                .replace(R.id.content_vendor, frag)
+                .addToBackStack(null)
+                .commit();
+    }
 }
+
+
