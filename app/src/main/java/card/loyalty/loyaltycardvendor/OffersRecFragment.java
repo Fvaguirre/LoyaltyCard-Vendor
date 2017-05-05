@@ -1,8 +1,10 @@
 package card.loyalty.loyaltycardvendor;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,7 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,6 +23,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import card.loyalty.loyaltycardvendor.adapters.LoyaltyOffersRecyclerAdapter;
@@ -34,6 +39,9 @@ public class OffersRecFragment extends Fragment {
 
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private static final int RC_SIGN_IN = 123;
+
 
     // Firebase Database References
     private DatabaseReference mRootRef;
@@ -58,13 +66,14 @@ public class OffersRecFragment extends Fragment {
 
         // Gets UID
         mFirebaseAuth = FirebaseAuth.getInstance();
-        mUid = mFirebaseAuth.getCurrentUser().getUid();
+//        mUid = mFirebaseAuth.getCurrentUser().getUid();
 
         mOffers = new ArrayList<>();
 
         // Sets Database Reference
         mRootRef = FirebaseDatabase.getInstance().getReference();
         mLoyaltyOffersRef = mRootRef.child("LoyaltyOffers");
+
     }
 
     @Nullable
@@ -84,27 +93,44 @@ public class OffersRecFragment extends Fragment {
 
         recyclerView.setAdapter(recyclerAdapter);
 
+        // Firebase AuthState Listener - stops null pointer problems with retrieve UID
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged: is signed_in:" + user.getUid());
+                    // Attaches the Database listner
+                    mUid = mFirebaseAuth.getCurrentUser().getUid();
+                    attachDatabaseReadListener();
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged: is signed_out");
+                }
+            }
+        };
+
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Attaches the Database
-        attachDatabaseReadListener();
-
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        // Detaches the Database
+
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         detachDatabaseReadListener();
     }
 
     // Database listener retrieves offers from Firebase and sets data to recycler view recyclerAdapter
     private void attachDatabaseReadListener() {
-        mQuery = mLoyaltyOffersRef.orderByChild("vendorID").equalTo(mFirebaseAuth.getCurrentUser().getUid());
+        mQuery = mLoyaltyOffersRef.orderByChild("vendorID").equalTo(mUid);
         Log.d(TAG, "Current mUid: " + mUid);
 
         if (mValueEventListener == null) {
@@ -124,7 +150,11 @@ public class OffersRecFragment extends Fragment {
                         }
                         recyclerAdapter.setOffers(mOffers);
                     } else {
+                        // Removes
                         Log.d(TAG, "dataSnapshot doesn't exist");
+                        if(getFragmentManager().getBackStackEntryCount() > 0 ) {
+                            getFragmentManager().popBackStack();
+                        }
                     }
                 }
 

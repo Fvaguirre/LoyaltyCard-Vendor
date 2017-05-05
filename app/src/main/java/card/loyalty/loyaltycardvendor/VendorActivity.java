@@ -56,8 +56,6 @@ public class VendorActivity extends AppCompatActivity
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
-    private String UID;
-    private Bundle uidArgs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +64,7 @@ public class VendorActivity extends AppCompatActivity
 
         // Firebase Authentication Initialisation
         mFirebaseAuth = FirebaseAuth.getInstance();
-        UID = mFirebaseAuth.getCurrentUser().getUid();
-
-        uidArgs = new Bundle();
-        uidArgs.putString(EXTRA_FIREBASE_UID, UID);
+//        UID = mFirebaseAuth.getCurrentUser().getUid();
 
         // FAB that launches the scanner
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -108,6 +103,13 @@ public class VendorActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged: is signed_in:" + user.getUid());
+                    // Start home screen fragment after user is signed in
+                    Fragment frag = new OffersRecFragment();
+                    FragmentManager manager = getSupportFragmentManager();
+                    manager.beginTransaction()
+                            .replace(R.id.content_vendor, frag)
+                            .addToBackStack(null)
+                            .commit();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged: is signed_out");
@@ -116,7 +118,7 @@ public class VendorActivity extends AppCompatActivity
                                     .createSignInIntentBuilder()
                                     .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                             new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                    .setTheme(R.style.AppTheme_NoActionBar)
+//                                    .setTheme(R.style.AppTheme_NoActionBar)
                                     .build(),
                             RC_SIGN_IN);
                 }
@@ -128,6 +130,7 @@ public class VendorActivity extends AppCompatActivity
             FragmentManager manager = getSupportFragmentManager();
             manager.beginTransaction()
                     .replace(R.id.content_vendor, frag)
+                    .addToBackStack(null)
                     .commit();
         }
     }
@@ -217,8 +220,7 @@ public class VendorActivity extends AppCompatActivity
                 break;
             case R.id.nav_add_offer:
                 // Launches Add Offer Fragment
-                current = new AddOfferFragment();
-                current.setArguments(uidArgs);
+                current = new AddOfferFragment();;
                 break;
             case R.id.nav_push_promos:
                 Toast.makeText(getApplicationContext(), "Push Promos Pressed", Toast.LENGTH_SHORT).show();

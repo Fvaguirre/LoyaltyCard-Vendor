@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -25,6 +26,9 @@ import card.loyalty.loyaltycardvendor.data_models.LoyaltyOffer;
 public class AddOfferFragment extends Fragment {
 
     private static final String TAG = "AddOfferFragment";
+
+    // Firebase Authentication
+    private FirebaseAuth mFirebaseAuth;
 
     // Firebase Database References
     private DatabaseReference mRootRef;
@@ -49,9 +53,9 @@ public class AddOfferFragment extends Fragment {
         // Initialises the View object
         view = inflater.inflate(R.layout.fragment_add_offer, container, false);
 
-        // gets UID from Vendor Activity
-        Bundle uidArgs = getArguments();
-        mUid = uidArgs.getString(VendorActivity.EXTRA_FIREBASE_UID);
+        // Gets UID
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mUid = mFirebaseAuth.getCurrentUser().getUid();
 
         // Gets Text for TextView and sets it
             // Finds the TextView
