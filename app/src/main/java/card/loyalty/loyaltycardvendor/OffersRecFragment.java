@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -24,7 +22,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import card.loyalty.loyaltycardvendor.adapters.LoyaltyOffersRecyclerAdapter;
@@ -67,7 +64,6 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
 
         // Gets UID
         mFirebaseAuth = FirebaseAuth.getInstance();
-//        mUid = mFirebaseAuth.getCurrentUser().getUid();
 
         mOffers = new ArrayList<>();
 

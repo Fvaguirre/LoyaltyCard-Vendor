@@ -3,7 +3,6 @@ package card.loyalty.loyaltycardvendor;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,7 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -53,9 +51,6 @@ public class VendorActivity extends AppCompatActivity
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
 
-    // Firebase UID extra for launching add offer activity
-    public static final String EXTRA_FIREBASE_UID = "FIREBASE_UID";
-
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -68,14 +63,6 @@ public class VendorActivity extends AppCompatActivity
         // Firebase Authentication Initialisation
         mFirebaseAuth = FirebaseAuth.getInstance();
         mLoyaltyCardsRef = FirebaseDatabase.getInstance().getReference().child("LoyaltyCards");
-
-        // FAB that launches the scanner
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            }
-        });
 
         /** Drawer Initialisation **/
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); // toolbar id from app_bar_vendor
