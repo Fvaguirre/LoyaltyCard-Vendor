@@ -5,9 +5,101 @@
     tools:context="card.loyalty.loyaltycardvendor.AddDetailFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/side_padding"
+        android:layout_marginEnd="@dimen/side_padding">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:text="Business Name"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/field_label_size" />
+
+
+            <EditText
+                android:id="@+id/detail_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorPrimary"
+                android:hint="Your Business Name"
+                android:layout_marginStart="-4dp"
+                android:layout_marginEnd="-4dp"
+                android:inputType="textMultiLine"
+                android:maxLength="200" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:text="Business Address"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/field_label_size" />
+
+
+            <EditText
+                android:id="@+id/detail_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorPrimary"
+                android:hint="Your Address"
+                android:layout_marginStart="-4dp"
+                android:layout_marginEnd="-4dp"
+                android:inputType="textMultiLine"
+                android:maxLength="200" />
+
+        </LinearLayout>
+
+        <!-- BUTTON CONTAINER -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp">
+
+            <!-- CANCEL BUTTON - Placeholder -->
+            <Button
+                android:id="@+id/btn_cancel_detail"
+                android:minHeight="36dp"
+                android:layout_marginRight="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:background="@color/tw__transparent"
+                android:text="Cancel"
+                android:textColor="@color/colorAccent" />
+
+            <!-- SUBMIT BUTTON -->
+            <Button
+                android:id="@+id/btn_submit_detail"
+                android:minHeight="36dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:background="@drawable/rounded_button"
+                android:text="Submit"
+                android:textColor="#FFFFFF" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>
