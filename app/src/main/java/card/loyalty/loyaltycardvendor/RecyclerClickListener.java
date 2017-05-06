@@ -9,12 +9,14 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
+ * Click listener for the recycler view.
  * Created by Sam on 22/04/2017.
  */
 
 public class RecyclerClickListener extends RecyclerView.SimpleOnItemTouchListener {
     private static final String TAG = "RecyclerClickListener";
 
+    // Interface implemented by fragment/activity containing recycler
     interface OnRecyclerClickListener {
         void onClick(View view, int position);
         void onLongClick(View view, int position);

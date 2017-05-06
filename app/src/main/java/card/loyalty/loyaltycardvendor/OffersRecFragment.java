@@ -176,12 +176,14 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
         }
     }
 
+    // launch the scanner on click
     @Override
     public void onClick(View view, int position) {
         ((VendorActivity) getActivity()).mOfferIndex = position;
         launchScanner();
     }
 
+    // TODO add options for long click (redeem/sell multiple etc)
     @Override
     public void onLongClick(View view, int position) {
 
