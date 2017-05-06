@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Navigation Drawer Items -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <!-- Offers -->
+        <item
+            android:id="@+id/nav_offers"
+            android:icon="@drawable/ic_cards_black_24dp"
+            android:title="Offers"/>
+
+        <!-- Add Offer -->
+        <item
+            android:id="@+id/nav_add_offer"
+            android:icon="@drawable/ic_add_box_black_24dp"
+            android:title="Add Offer"/>
+
+        <!-- Item 3 -->
+        <item
+            android:id="@+id/nav_push_promos"
+            android:icon="@drawable/ic_money_box_black_24dp"
+            android:title="Push Promos"/>
+
+        <item
+            android:id="@+id/nav_update_details"
+            android:title="Update Details"/>
+    </group>
+
+</menu>
