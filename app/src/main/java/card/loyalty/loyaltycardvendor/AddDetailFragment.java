@@ -45,7 +45,7 @@ public class AddDetailFragment extends Fragment {
 
         //create reference point
         mRootRef = FirebaseDatabase.getInstance().getReference();
-        mVendorDetailsRef = mRootRef.child("Vendor");
+        mVendorDetailsRef = mRootRef.child("Vendors");
 
         //gathers UID from VendorLandingActivity
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -95,7 +95,7 @@ public class AddDetailFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(v == cancelButton) {
-                    Toast.makeText(getContext(), "Offer Creation Canceled", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Detail update cancelled", Toast.LENGTH_SHORT).show();
                     // Closes Fragment
                     if(getFragmentManager().getBackStackEntryCount() > 0 ) {
                         hideKeyboard();
