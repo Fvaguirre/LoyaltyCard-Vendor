@@ -210,7 +210,7 @@ public class VendorActivity extends AppCompatActivity
     private void createDetails() {
         Log.d(TAG, "createDetails: start");
         final String Uid = mFirebaseAuth.getCurrentUser().getUid();
-        final Query query = FirebaseDatabase.getInstance().getReference().child("Vendor");
+        final Query query = FirebaseDatabase.getInstance().getReference().child("Vendors");
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
