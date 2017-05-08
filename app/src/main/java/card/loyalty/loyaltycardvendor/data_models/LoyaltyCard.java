@@ -13,6 +13,7 @@ public class LoyaltyCard {
     public String rewardsIssued;
     public String rewardsClaimed;
     public String vendorID;
+    public String purchasesPerReward;
 
     // Hybrid key for search
     public String offerID_customerID;
@@ -21,13 +22,14 @@ public class LoyaltyCard {
 
     public LoyaltyCard() {};
 
-    public LoyaltyCard(String offerID, String customerID) {
+    public LoyaltyCard(String offerID, String customerID, String purchasesPerReward) {
         this.offerID = offerID;
         this.customerID = customerID;
         this.purchaseCount = "0";
         this.rewardsIssued = "0";
         this.rewardsClaimed = "0";
         this.offerID_customerID = offerID + "_" + customerID;
+        this.purchasesPerReward = purchasesPerReward;
     }
 
     public String retrieveCardID() {
@@ -43,5 +45,31 @@ public class LoyaltyCard {
         int pC = Integer.parseInt(this.purchaseCount);
         pC += amountPurchased;
         this.purchaseCount = Integer.toString(pC);
+        if (amountPurchased > 0) checkReward();
+    }
+
+    // redeem a reward
+    public boolean redeem() {
+        int issued = Integer.parseInt(this.rewardsIssued);
+        int claimed = Integer.parseInt(this.rewardsClaimed);
+        if (issued > claimed) {
+            claimed ++;
+            this.rewardsClaimed = Integer.toString(claimed);
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    // checks if reward should be issued
+    public void checkReward() {
+        int ppr = Integer.parseInt(purchasesPerReward);
+        int pc = Integer.parseInt(purchaseCount);
+        if (pc % ppr == 0) {
+            int issued = Integer.parseInt(rewardsIssued);
+            issued ++;
+            this.rewardsIssued = Integer.toString(issued);
+        }
     }
 }

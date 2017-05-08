@@ -43,6 +43,8 @@ public class VendorActivity extends AppCompatActivity
 
     public int mOfferIndex;
     public DatabaseReference mLoyaltyCardsRef;
+    // wasLongPressed used in determining whether redeeming reward or purchasing
+    public boolean mWasLongPressed;
 
     // List of Offers created
     public List<LoyaltyOffer> mOffers;
@@ -78,10 +80,10 @@ public class VendorActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
         // Sets Navigaiotn Item Listeners
-            // Main Items
+        // Main Items
         NavigationView nView = (NavigationView) findViewById(R.id.nav_view);
         nView.setNavigationItemSelectedListener(this);
-            // Footer Items
+        // Footer Items
         NavigationView nViewFooter = (NavigationView) findViewById(R.id.nav_view_footer);
         nViewFooter.setNavigationItemSelectedListener(this);
 
@@ -109,7 +111,7 @@ public class VendorActivity extends AppCompatActivity
             }
         };
 
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             Fragment frag = new OffersRecFragment();
             FragmentManager manager = getSupportFragmentManager();
             manager.beginTransaction()
@@ -132,24 +134,24 @@ public class VendorActivity extends AppCompatActivity
                 Toast.makeText(this, "Sign in cancelled", Toast.LENGTH_SHORT).show();
                 finish();
             }
-        }else {
+        } else {
             // Handle the QR scanning result
             IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
             if (result != null) {
                 if (result.getContents() == null) {
                     Toast.makeText(this, "You cancelled the scanning", Toast.LENGTH_LONG).show();
                 } else {
-                    Log.d(TAG, "onActivityResult: result.getContents(): "+ result.getContents());
-                    String offerID = mOffers.get(mOfferIndex).getOfferID();
-                    processScanResult(offerID, result.getContents());
+                    Log.d(TAG, "onActivityResult: result.getContents(): " + result.getContents());
+                    LoyaltyOffer offer = mOffers.get(mOfferIndex);
+                    processScanResult(offer, result.getContents());
                 }
             }
         }
     }
 
     // processes the result of scanning
-    private void processScanResult(final String offerID, final String customerID) {
-        String offerIDcustomerID = offerID + "_" + customerID;
+    private void processScanResult(final LoyaltyOffer offer, final String customerID) {
+        String offerIDcustomerID = offer.getOfferID() + "_" + customerID;
         Log.d(TAG, "processScanResult: start");
         Query query = mLoyaltyCardsRef.orderByChild("offerID_customerID").equalTo(offerIDcustomerID);
 
@@ -157,7 +159,7 @@ public class VendorActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    for (DataSnapshot cardSnapshot: dataSnapshot.getChildren()) {
+                    for (DataSnapshot cardSnapshot : dataSnapshot.getChildren()) {
                         LoyaltyCard card = cardSnapshot.getValue(LoyaltyCard.class);
                         card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
                         Log.d(TAG, "onDataChange: card purchase count: " + card.purchaseCount);
@@ -165,7 +167,7 @@ public class VendorActivity extends AppCompatActivity
                         updateCard(card);
                     }
                 } else {
-                    createCard(offerID, customerID);
+                    createCard(offer, customerID);
                 }
             }
 
@@ -181,8 +183,21 @@ public class VendorActivity extends AppCompatActivity
 
     // updates the card
     protected void updateCard(LoyaltyCard card) {
+        // array used so final can be used. final used to access value in callback
+        final Boolean redeem[] = new Boolean[1];
+        redeem[0] = false;
         Log.d(TAG, "updateCard: start");
-        card.addToPurchaseCount(1);
+        // if not long pressed add to purchase count, otherwise redeem reward
+        if (!mWasLongPressed) {
+            card.addToPurchaseCount(1);
+        } else {
+            // redeem reward or display toast message if nothing to redeem
+            redeem[0] = card.redeem();
+            if (!redeem[0]) {
+                Toast.makeText(this, "Nothing to Redeem!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
         String key = card.retrieveCardID();
         if (key == null) key = mLoyaltyCardsRef.push().getKey();
         mLoyaltyCardsRef.child(key).setValue(card, new DatabaseReference.CompletionListener() {
@@ -191,7 +206,11 @@ public class VendorActivity extends AppCompatActivity
                 if (databaseError != null) {
                     Toast.makeText(VendorActivity.this, "FAILED TO UPDATE. TRY AGAIN!", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(VendorActivity.this, "Purchase Count Successfully Updated", Toast.LENGTH_SHORT).show();
+                    if (redeem[0]) {
+                        Toast.makeText(VendorActivity.this, "Reward Successfully Redeemed!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(VendorActivity.this, "Purchase Count Successfully Updated", Toast.LENGTH_SHORT).show();
+                    }
                     Log.d(TAG, "onComplete: success");
                 }
             }
@@ -200,9 +219,10 @@ public class VendorActivity extends AppCompatActivity
     }
 
     // creates a new card
-    private void createCard(String offerID, String customerID) {
+    private void createCard(LoyaltyOffer offer, String customerID) {
         Log.d(TAG, "createCard: start");
-        LoyaltyCard card = new LoyaltyCard(offerID, customerID);
+        LoyaltyCard card = new LoyaltyCard(offer.getOfferID(), customerID, offer.purchasesPerReward);
+        card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
         updateCard(card);
         Log.d(TAG, "createCard: end");
     }
@@ -297,7 +317,9 @@ public class VendorActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    /** Drawer Functionality **/
+    /**
+     * Drawer Functionality
+     **/
     // Add desired functionality in each switch case
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -312,7 +334,8 @@ public class VendorActivity extends AppCompatActivity
                 break;
             case R.id.nav_add_offer:
                 // Launches Add Offer Fragment
-                current = new AddOfferFragment();;
+                current = new AddOfferFragment();
+                ;
                 break;
             case R.id.nav_push_promos:
                 Toast.makeText(getApplicationContext(), "Push Promos Pressed", Toast.LENGTH_SHORT).show();
@@ -320,7 +343,8 @@ public class VendorActivity extends AppCompatActivity
 
             case R.id.nav_update_details:
                 // Launches Your Fragment
-                current = new AddDetailFragment();;
+                current = new AddDetailFragment();
+                ;
                 break;
 
             case R.id.nav_sign_out:

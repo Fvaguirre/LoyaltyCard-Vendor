@@ -180,13 +180,16 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     @Override
     public void onClick(View view, int position) {
         ((VendorActivity) getActivity()).mOfferIndex = position;
+        ((VendorActivity) getActivity()).mWasLongPressed = false;
         launchScanner();
     }
 
     // TODO add options for long click (redeem/sell multiple etc)
     @Override
     public void onLongClick(View view, int position) {
-
+        ((VendorActivity) getActivity()).mOfferIndex = position;
+        ((VendorActivity) getActivity()).mWasLongPressed = true;
+        launchScanner();
     }
 
     // Launch the QR Scanner
