@@ -203,6 +203,7 @@ public class VendorActivity extends AppCompatActivity
     private void createCard(String offerID, String customerID) {
         Log.d(TAG, "createCard: start");
         LoyaltyCard card = new LoyaltyCard(offerID, customerID);
+        card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
         updateCard(card);
         Log.d(TAG, "createCard: end");
     }

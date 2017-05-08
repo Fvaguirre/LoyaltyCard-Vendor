@@ -21,6 +21,7 @@ public class LoyaltyCard {
 
     public LoyaltyCard() {};
 
+    // TODO move vendorID into constructor as it is required for functioning app
     public LoyaltyCard(String offerID, String customerID) {
         this.offerID = offerID;
         this.customerID = customerID;
