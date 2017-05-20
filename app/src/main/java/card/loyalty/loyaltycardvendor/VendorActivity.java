@@ -116,7 +116,6 @@ public class VendorActivity extends AppCompatActivity
             FragmentManager manager = getSupportFragmentManager();
             manager.beginTransaction()
                     .replace(R.id.content_vendor, frag)
-                    .addToBackStack(null)
                     .commit();
         }
     }
@@ -324,7 +323,7 @@ public class VendorActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
 
-        Fragment current = new OffersRecFragment();
+        Fragment current = null;
 
         // Handle navigation view item clicks here.
         switch (item.getItemId()) {
@@ -335,7 +334,6 @@ public class VendorActivity extends AppCompatActivity
             case R.id.nav_add_offer:
                 // Launches Add Offer Fragment
                 current = new AddOfferFragment();
-                ;
                 break;
             case R.id.nav_push_promos:
                 Toast.makeText(getApplicationContext(), "Push Promos Pressed", Toast.LENGTH_SHORT).show();
@@ -344,7 +342,6 @@ public class VendorActivity extends AppCompatActivity
             case R.id.nav_update_details:
                 // Launches Your Fragment
                 current = new AddDetailFragment();
-                ;
                 break;
 
             case R.id.nav_sign_out:
@@ -352,6 +349,8 @@ public class VendorActivity extends AppCompatActivity
                 AuthUI.getInstance().signOut(this);
                 break;
         }
+
+        if (current == null) return true;
 
         // Launches fragment
         FragmentManager fragmentManager = getSupportFragmentManager();

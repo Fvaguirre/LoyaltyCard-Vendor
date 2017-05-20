@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                app:menu="@menu/drawer_foorter_items"
+                app:menu="@menu/drawer_footer_items"
                 app:itemIconTint="#000000"
                 android:layout_weight="1"/>
 
