@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -40,6 +41,8 @@ public class VendorActivity extends AppCompatActivity
     private static final String TAG = "VendorActivity";
     private static final int RC_SIGN_IN = 123;
 
+    // Navigation Drawer
+    private NavigationView nView;
 
     public int mOfferIndex;
     public DatabaseReference mLoyaltyCardsRef;
@@ -54,6 +57,10 @@ public class VendorActivity extends AppCompatActivity
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
+
+    // User Info TextViews
+    private TextView userNameView;
+    private TextView emailView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +86,7 @@ public class VendorActivity extends AppCompatActivity
         drawerToggle.syncState();
         // Sets Navigaiotn Item Listeners
             // Main Items
-        NavigationView nView = (NavigationView) findViewById(R.id.nav_view);
+        nView = (NavigationView) findViewById(R.id.nav_view);
         nView.setNavigationItemSelectedListener(this);
             // Footer Items
         NavigationView nViewFooter = (NavigationView) findViewById(R.id.nav_view_footer);
@@ -94,6 +101,12 @@ public class VendorActivity extends AppCompatActivity
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged: is signed_in:" + user.getUid());
                     createDetails();
+
+                    // User Info TextViews
+                    userNameView = (TextView) nView.getHeaderView(0).findViewById(R.id.username_view);
+                    emailView = (TextView) nView.getHeaderView(0).findViewById(R.id.email_view);
+                    userNameView.setText(user.getDisplayName());
+                    emailView.setText(user.getEmail());
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged: is signed_out");
