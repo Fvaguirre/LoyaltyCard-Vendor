@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -45,10 +46,12 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     private DatabaseReference mRootRef;
     private DatabaseReference mLoyaltyOffersRef;
     private ValueEventListener mValueEventListener;
-    private  Query mQuery;
+    private Query mQuery;
 
     // Firebase User ID
     private String mUid;
+
+    private ProgressBar spinner;
 
     // RecyclerView Objects
     protected RecyclerView recyclerView;
@@ -91,6 +94,10 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
         // Creates recyclerAdapter for content
         recyclerAdapter = new LoyaltyOffersRecyclerAdapter(mOffers);
         recyclerView.setAdapter(recyclerAdapter);
+
+        spinner = (ProgressBar)view.findViewById(R.id.card_spinner);
+        spinner.setVisibility(View.VISIBLE);
+
 
         // Firebase AuthState Listener - stops null pointer problems with retrieve UID
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
@@ -149,6 +156,7 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
                         }
                         recyclerAdapter.setOffers(mOffers);
                         ((VendorActivity) getActivity()).mOffers = mOffers;
+                        spinner.setVisibility(View.GONE);
                     } else {
                         // Removes
                         Log.d(TAG, "dataSnapshot doesn't exist");
