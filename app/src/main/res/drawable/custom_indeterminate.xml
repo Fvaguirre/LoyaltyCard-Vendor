@@ -3,7 +3,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
         <item>
             <rotate
-                android:drawable="@drawable/custom_spinner"
+                android:drawable="@drawable/custom_spinner1"
                 android:fillAfter="true"
                 android:fromDegrees="0"
                 android:pivotX="50%"
