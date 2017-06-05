@@ -29,10 +29,13 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyCard;
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyOffer;
+import card.loyalty.loyaltycardvendor.data_models.Subscription;
 
 public class VendorActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,7 +45,11 @@ public class VendorActivity extends AppCompatActivity
 
 
     public int mOfferIndex;
+
+
     public DatabaseReference mLoyaltyCardsRef;
+    public DatabaseReference mSubscriptions;
+
     // wasLongPressed used in determining whether redeeming reward or purchasing
     public boolean mWasLongPressed;
 
@@ -180,6 +187,14 @@ public class VendorActivity extends AppCompatActivity
         Log.d(TAG, "processScanResult: end");
     }
 
+    public boolean isAuthenticated() {
+        if (mFirebaseAuth.getCurrentUser() != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // updates the card
     protected void updateCard(LoyaltyCard card) {
         // array used so final can be used. final used to access value in callback
@@ -189,6 +204,7 @@ public class VendorActivity extends AppCompatActivity
         // if not long pressed add to purchase count, otherwise redeem reward
         if (!mWasLongPressed) {
             card.addToPurchaseCount(1);
+            subscribeCardHolder(card.customerID);
         } else {
             // redeem reward or display toast message if nothing to redeem
             redeem[0] = card.redeem();
@@ -223,7 +239,22 @@ public class VendorActivity extends AppCompatActivity
         LoyaltyCard card = new LoyaltyCard(offer.getOfferID(), customerID, offer.purchasesPerReward);
         card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
         updateCard(card);
+        subscribeCardHolder(customerID);
         Log.d(TAG, "createCard: end");
+    }
+
+    // subscribe user to push notifications
+    private void subscribeCardHolder(String customerId) {
+
+        // get the vendors uid to use as database key within Subscriptions node
+        String keyVendor = mFirebaseAuth.getCurrentUser().getUid();
+
+        // set the database reference to
+        mSubscriptions = FirebaseDatabase.getInstance().getReference().child("Subscriptions");
+
+        HashMap<String, Object> subscription = new HashMap<>();
+        subscription.put(customerId, new Subscription(Boolean.TRUE));
+        mSubscriptions.child(keyVendor).updateChildren(subscription);
     }
 
     private void createDetails() {
@@ -336,7 +367,8 @@ public class VendorActivity extends AppCompatActivity
                 current = new AddOfferFragment();
                 break;
             case R.id.nav_push_promos:
-                Toast.makeText(getApplicationContext(), "Push Promos Pressed", Toast.LENGTH_SHORT).show();
+                // Launches Push Promo Fragment
+                current = new PushPromotionFragment();
                 break;
 
             case R.id.nav_update_details:

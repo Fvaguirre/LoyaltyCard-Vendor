@@ -75,7 +75,7 @@ public class AddOfferFragment extends Fragment {
         cancelButton = (Button) view.findViewById(R.id.btn_cancel_offer);
 
         // Submit's info and closes fragment
-        submitButton.setOnClickListener( new View.OnClickListener() {
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
