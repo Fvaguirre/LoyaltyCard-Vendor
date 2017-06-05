@@ -120,7 +120,7 @@ public class AddOfferFragment extends Fragment {
                     key = mLoyaltyOffersRef.push().getKey();
 
                     // Takes the push key for the database types as an identifier for the image child
-                    StorageReference filepath = mStorage.child("Images").child(key);
+                    StorageReference filepath = mStorage.child("Images").child(key).child(mUid);
                     // download path assigned upon image selection
                     filepath.putFile(uri);
 
