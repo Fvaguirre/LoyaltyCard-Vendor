@@ -21,7 +21,6 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -29,7 +28,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import card.loyalty.loyaltycardvendor.data_models.Promotion;
 
@@ -46,26 +52,24 @@ public class PushPromotionFragment extends Fragment {
 
 
     // View
-    View mView;
+    private View mView;
 
     // Promotion Key
-    String mPromoKey;
+    private String mPromoKey;
 
     // VendorID
-    String mVendorId;
+    private String mVendorId;
 
     // Widgets
-    EditText mTitle;
-    EditText mDescription;
-    EditText mExpiryDate;
-    Button mCancelButton;
-    Button mSubmitButton;
+    private EditText mTitle;
+    private EditText mDescription;
+    private EditText mExpiryDate;
+    private Button mCancelButton;
+    private Button mSubmitButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
     @Nullable
@@ -83,7 +87,7 @@ public class PushPromotionFragment extends Fragment {
 
         mTitle = (EditText) mView.findViewById(R.id.promo_title);
         mDescription = (EditText) mView.findViewById(R.id.promo_description);
-        mExpiryDate = (EditText) mView.findViewById(R.id.promo_description);
+        mExpiryDate = (EditText) mView.findViewById(R.id.promo_expiry);
         mCancelButton = (Button) mView.findViewById(R.id.btn_cancel_promo);
         mSubmitButton = (Button) mView.findViewById(R.id.btn_submit_promo);
 
@@ -93,7 +97,23 @@ public class PushPromotionFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                // TODO add regex to check date validity
+                // Regex match to make sure date is valid
+                if (!validateDate(mExpiryDate.getText().toString())) {
+                    Toast.makeText(getContext(), "Invalid Date", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onClick: " + mExpiryDate.getText().toString());
+                    return;
+                }
+                // check that the date has not already passed to avoid push notifications with no current promotion associated
+                try {
+                    if (datePassed(mExpiryDate.getText().toString())) {
+                        Toast.makeText(getContext(), "Date Has Already Passed", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Unexpected Date Format", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Promotion promo = new Promotion(
                         mTitle.getText().toString(),
@@ -119,6 +139,55 @@ public class PushPromotionFragment extends Fragment {
 
         return mView;
     }
+
+    /**
+     * Validates a date according to regular expression
+     * @param date a string representing a date, expected to be in format dd/MM/yyyy
+     * @return boolean true if date matches required format
+     */
+    public static boolean validateDate(String date) {
+        String datePattern = "^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[1,3-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$";
+        String yearYYYY = "^\\d{2}\\/\\d{2}\\/\\d{4}$";
+        Pattern p = Pattern.compile(datePattern);
+        Matcher m = p.matcher(date);
+
+        // above regex allows YY format dates which we don't want
+        Pattern pYYYY = Pattern.compile(yearYYYY);
+        Matcher mYYYY = pYYYY.matcher(date);
+
+        return m.matches() && mYYYY.matches();
+    }
+
+    /**
+     *
+     * @param date that may have passed
+     * @return true if date has passed
+     * @throws ParseException if the string cannot be parsed into date
+     */
+    public static boolean datePassed(String date) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date strDate = sdf.parse(date);
+        Date today = removeTime(new Date());
+        if (strDate.before(today)) {
+            return true;
+        } else return false;
+    }
+
+    /**
+     * Method to remove the time component of the date (this is so it can be compared wth a date with no time component)
+     * @param date a date to remove the time component from
+     * @return the date with time component set to 00:00:00
+     */
+    public static Date removeTime(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
 
     // creates a push promotion in the firebase promotions table
     private void createPromotion(Promotion promo) {

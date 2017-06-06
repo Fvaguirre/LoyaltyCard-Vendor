@@ -11,6 +11,7 @@ public class Promotion {
     public String expiryDate;
     public String vendorId;
 
+    // default constructor required for Firebase
     public Promotion(){}
 
     public Promotion(String title, String description, String expiryDate, String vendorId) {

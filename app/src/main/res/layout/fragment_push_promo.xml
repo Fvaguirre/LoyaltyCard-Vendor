@@ -24,16 +24,6 @@
             android:gravity="center"
             android:layout_marginTop="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Vendor UID:" />
-
-            <TextView
-                android:id="@+id/offer_uid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TextView" />
         </LinearLayout>
 
         <!-- DESCRIPTION FIELD -->
@@ -89,7 +79,7 @@
                 android:layout_marginStart="-4dp"
                 android:backgroundTint="@color/colorPrimary"
                 android:hint="e.g. 5 dollars off any main"
-                android:inputType="number" />
+                android:inputType="text" />
         </LinearLayout>
 
 
