@@ -88,7 +88,7 @@ public class PushPromotionFragmentTest {
     @Test
     public void testPassedDate() {
         try {
-            Assert.assertTrue("06/06/2017 should be recognised as in the past, today is ", mFragment.datePassed("06/06/2017"));
+            Assert.assertTrue("06/06/2017 should be recognised as in the past, today is ", mFragment.isDatePassed("06/06/2017"));
         } catch (ParseException e) {
             e.printStackTrace();
             Assert.fail();
@@ -101,7 +101,7 @@ public class PushPromotionFragmentTest {
     @Test
     public void testFutureDate() {
         try {
-            Assert.assertFalse("01/01/2050 should be recognised as in the future", mFragment.datePassed("01/01/2050"));
+            Assert.assertFalse("01/01/2050 should be recognised as in the future", mFragment.isDatePassed("01/01/2050"));
         } catch (ParseException e) {
             e.printStackTrace();
             Assert.fail();
@@ -113,7 +113,7 @@ public class PushPromotionFragmentTest {
      */
     @Test (expected = ParseException.class)
     public void testInvalidPassedDate() throws ParseException {
-        mFragment.datePassed("1/1///11111");
+        mFragment.isDatePassed("1/1///11111");
     }
 
 }

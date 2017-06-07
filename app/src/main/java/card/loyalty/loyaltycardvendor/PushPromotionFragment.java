@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.InputMismatchException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,7 +104,7 @@ public class PushPromotionFragment extends Fragment {
                 }
                 // check that the date has not already passed to avoid push notifications with no current promotion associated
                 try {
-                    if (datePassed(mExpiryDate.getText().toString())) {
+                    if (isDatePassed(mExpiryDate.getText().toString())) {
                         Toast.makeText(getContext(), "Date Has Already Passed", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -118,6 +117,7 @@ public class PushPromotionFragment extends Fragment {
                 Promotion promo = new Promotion(
                         mTitle.getText().toString(),
                         mDescription.getText().toString(),
+                        getCurrentDate(),
                         mExpiryDate.getText().toString(),
                         mVendorId
                 );
@@ -164,7 +164,7 @@ public class PushPromotionFragment extends Fragment {
      * @return true if date has passed
      * @throws ParseException if the string cannot be parsed into date
      */
-    public static boolean datePassed(String date) throws ParseException {
+    public static boolean isDatePassed(String date) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         Date strDate = sdf.parse(date);
         Date today = removeTime(new Date());
@@ -186,6 +186,16 @@ public class PushPromotionFragment extends Fragment {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
+    }
+
+    /**
+     * Gets the current date as a string
+     * @return current date
+     */
+    public static String getCurrentDate() {
+        Date date = removeTime(new Date());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        return sdf.format(date);
     }
 
 
