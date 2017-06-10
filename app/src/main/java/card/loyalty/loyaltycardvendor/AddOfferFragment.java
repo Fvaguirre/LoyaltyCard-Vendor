@@ -118,11 +118,26 @@ public class AddOfferFragment extends Fragment {
                 if(v == submitButton) {
 
                     key = mLoyaltyOffersRef.push().getKey();
-
                     // Takes the push key for the database types as an identifier for the image child
                     StorageReference filepath = mStorage.child("Images").child(key).child(mUid);
-                    // download path assigned upon image selection
-                    filepath.putFile(uri);
+                    // Checks if user has uploaded an image
+                    if(uri != null) {
+                        // download path assigned upon image selection
+                        filepath.putFile(uri);
+                    }
+                    else{
+                        // String assigned by current package name
+                        String packageName = getActivity().getPackageName();
+                        // Generates a URI calling to a placeholder image in drawable
+                        Uri drawableUri = Uri.parse("android.resource://"+packageName+"/drawable/upload_placeholder");
+                        try {
+                            InputStream stream = getActivity().getContentResolver().openInputStream(drawableUri);
+                            filepath.putFile(drawableUri);
+                            stream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     // Creates new Loyalty Offer Object
                     LoyaltyOffer newOffer = new LoyaltyOffer(
@@ -177,10 +192,10 @@ public class AddOfferFragment extends Fragment {
                 InputStream imageStream = getActivity().getContentResolver().openInputStream(uri);
                 // Assigns selectedImage global variable to a decoded version of the picture
                 selectedImage = BitmapFactory.decodeStream(imageStream);
-
+                ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
                 // Sets the selectedImage as an ImageView for UI purposes
-                ImageView imageView = (ImageView)view.findViewById(R.id.imageView);
                 imageView.setImageBitmap(selectedImage);
+                imageStream.close();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -188,8 +203,6 @@ public class AddOfferFragment extends Fragment {
 
         }
     }
-
-
     // Hides Keyboard after fragment closes
     public void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
