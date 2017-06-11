@@ -1,6 +1,10 @@
 package card.loyalty.loyaltycardvendor;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -9,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +21,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyOffer;
 
@@ -40,12 +50,23 @@ public class AddOfferFragment extends Fragment {
     // View object
     private View view;
 
+    private StorageReference mStorage;
+
+    private static final int CHOOSE_IMAGE_INTENT = 111;
+
     // Fields
     private EditText description;
     private EditText purchasesPerReward;
     private EditText reward;
     private Button submitButton;
     private Button cancelButton;
+    private Button chooseButton;
+
+    private String key = "123";
+
+    // Image identifiers
+    private Bitmap selectedImage;
+    private Uri uri;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -66,6 +87,7 @@ public class AddOfferFragment extends Fragment {
         // Firebase Initialisation
         mRootRef = FirebaseDatabase.getInstance().getReference();
         mLoyaltyOffersRef = mRootRef.child("LoyaltyOffers");
+        mStorage = FirebaseStorage.getInstance().getReference();
 
         // Field Initialisation
         description = (EditText) view.findViewById(R.id.offer_description);
@@ -73,6 +95,20 @@ public class AddOfferFragment extends Fragment {
         reward = (EditText) view.findViewById(R.id.offer_reward);
         submitButton = (Button) view.findViewById(R.id.btn_submit_offer);
         cancelButton = (Button) view.findViewById(R.id.btn_cancel_offer);
+        chooseButton = (Button) view.findViewById(R.id.btn_choose_image);
+
+        chooseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(v == chooseButton){
+                    Intent intent = new Intent();
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+
+                    startActivityForResult(Intent.createChooser(intent, "Select Picture"), CHOOSE_IMAGE_INTENT);
+                }}
+
+        });
 
         // Submit's info and closes fragment
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +116,28 @@ public class AddOfferFragment extends Fragment {
             public void onClick(View v) {
 
                 if(v == submitButton) {
-                    String key = mLoyaltyOffersRef.push().getKey();
+
+                    key = mLoyaltyOffersRef.push().getKey();
+                    // Takes the push key for the database types as an identifier for the image child
+                    StorageReference filepath = mStorage.child("Images").child(key).child(mUid);
+                    // Checks if user has uploaded an image
+                    if(uri != null) {
+                        // download path assigned upon image selection
+                        filepath.putFile(uri);
+                    }
+                    else{
+                        // String assigned by current package name
+                        String packageName = getActivity().getPackageName();
+                        // Generates a URI calling to a placeholder image in drawable
+                        Uri drawableUri = Uri.parse("android.resource://"+packageName+"/drawable/upload_placeholder");
+                        try {
+                            InputStream stream = getActivity().getContentResolver().openInputStream(drawableUri);
+                            filepath.putFile(drawableUri);
+                            stream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     // Creates new Loyalty Offer Object
                     LoyaltyOffer newOffer = new LoyaltyOffer(
@@ -127,10 +184,31 @@ public class AddOfferFragment extends Fragment {
         return view;
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHOOSE_IMAGE_INTENT && resultCode == VendorActivity.RESULT_OK) {
+            uri = data.getData();
+            try {
+                InputStream imageStream = getActivity().getContentResolver().openInputStream(uri);
+                // Assigns selectedImage global variable to a decoded version of the picture
+                selectedImage = BitmapFactory.decodeStream(imageStream);
+                ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
+                // Sets the selectedImage as an ImageView for UI purposes
+                imageView.setImageBitmap(selectedImage);
+                imageStream.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
     // Hides Keyboard after fragment closes
     public void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
+
+    //TODO possibility of failure/success listeners for image file upload
 
 }
