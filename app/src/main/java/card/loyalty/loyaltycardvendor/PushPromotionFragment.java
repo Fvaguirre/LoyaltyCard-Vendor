@@ -2,6 +2,7 @@ package card.loyalty.loyaltycardvendor;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,7 +21,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -210,8 +214,18 @@ public class PushPromotionFragment extends Fragment {
                 } else {
                     Toast.makeText(getContext(), "Promotion Created!", Toast.LENGTH_LONG).show();
 
-                    // Make the call to the cloud function API to push the promotion out to vendor's customers
-                    pushPromotion(mPromoKey, mVendorId);
+                    if (((VendorActivity) getActivity()).isAuthenticated()){
+                        FirebaseAuth.getInstance().getCurrentUser()
+                                .getToken(false).addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                GetTokenResult result = task.getResult();
+
+                                // Make the call to the cloud function API to push the promotion out to vendor's customers
+                                pushPromotion(mPromoKey, mVendorId, result.getToken());
+                            }
+                        });
+                    }
 
                     // Close Fragment
                     if(getFragmentManager().getBackStackEntryCount() > 0 ) {
@@ -224,14 +238,15 @@ public class PushPromotionFragment extends Fragment {
     }
 
     // when promotion has been successfully created pushPromotion() should be called (from the success callback)
-    private void pushPromotion(String promoID, String vendorId) {
+    private void pushPromotion(String promoID, String vendorId, String idToken) {
         final RequestQueue queue = Volley.newRequestQueue(getContext());
-        final String URL = "https://us-central1-loyaltycard-48904.cloudfunctions.net/push";
+        final String URL = CONFIG.PUSH_CLOUD_FUNCTION;
 
         // Post params to be sent to the server
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("promo", promoID);
         params.put("vendor", vendorId);
+        params.put("auth", idToken);
 
         JsonObjectRequest req = new JsonObjectRequest(URL, new JSONObject(params),
                 new Response.Listener<JSONObject>() {
