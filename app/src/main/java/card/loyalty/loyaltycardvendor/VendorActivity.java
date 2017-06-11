@@ -36,6 +36,7 @@ import java.util.Map;
 
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyCard;
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyOffer;
+import card.loyalty.loyaltycardvendor.data_models.LoyaltyReward;
 import card.loyalty.loyaltycardvendor.data_models.Subscription;
 
 public class VendorActivity extends AppCompatActivity
@@ -51,6 +52,7 @@ public class VendorActivity extends AppCompatActivity
 
 
     public DatabaseReference mLoyaltyCardsRef;
+    public DatabaseReference mLoyaltyRewardsRef;
     public DatabaseReference mSubscriptions;
 
     // wasLongPressed used in determining whether redeeming reward or purchasing
@@ -79,6 +81,7 @@ public class VendorActivity extends AppCompatActivity
         // Firebase Authentication Initialisation
         mFirebaseAuth = FirebaseAuth.getInstance();
         mLoyaltyCardsRef = FirebaseDatabase.getInstance().getReference().child("LoyaltyCards");
+        mLoyaltyRewardsRef = FirebaseDatabase.getInstance().getReference().child("LoyaltyRewards");
 
         /** Drawer Initialisation **/
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar); // toolbar id from app_bar_vendor
@@ -183,7 +186,7 @@ public class VendorActivity extends AppCompatActivity
                         card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
                         Log.d(TAG, "onDataChange: card purchase count: " + card.purchaseCount);
                         card.setCardID(cardSnapshot.getKey());
-                        updateCard(card);
+                        updateCard(card, offer);
                     }
                 } else {
                     createCard(offer, customerID);
@@ -209,7 +212,7 @@ public class VendorActivity extends AppCompatActivity
     }
 
     // updates the card
-    protected void updateCard(LoyaltyCard card) {
+    protected void updateCard(LoyaltyCard card, LoyaltyOffer offer) {
         // array used so final can be used. final used to access value in callback
         final Boolean redeem[] = new Boolean[1];
         redeem[0] = false;
@@ -217,6 +220,7 @@ public class VendorActivity extends AppCompatActivity
         // if not long pressed add to purchase count, otherwise redeem reward
         if (!mWasLongPressed) {
             card.addToPurchaseCount(1);
+            checkIssueRewards(card, offer);
             subscribeCardHolder(card.customerID);
         } else {
             // redeem reward or display toast message if nothing to redeem
@@ -246,12 +250,56 @@ public class VendorActivity extends AppCompatActivity
         Log.d(TAG, "updateCard: end");
     }
 
+    private void updateReward(LoyaltyReward reward) {
+        reward.addRewardsAvailable();
+        if(reward.retrieveRewardID() == null) {
+            reward.setRewardID(mLoyaltyRewardsRef.push().getKey());
+            Log.d("!!!!!!!!!!!", reward.retrieveRewardID());
+        }
+        String key = reward.retrieveRewardID();
+        Log.d("???????????", reward.retrieveRewardID());
+        mLoyaltyRewardsRef.child(key).setValue(reward, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    Toast.makeText(VendorActivity.this, "Failed to update reward! Try again!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.d(TAG, "onComplete: success");
+                }
+            }
+        });
+    }
+
+    // Checks whether a LoyaltyReward should be issued and the amount of Rewards that should be issued
+    private void checkIssueRewards(LoyaltyCard card, LoyaltyOffer offer) {
+
+        int rI = Integer.parseInt(card.rewardsIssued);
+        int pC = Integer.parseInt(card.purchaseCount);
+        int pPR = Integer.parseInt(card.purchasesPerReward);
+
+        for(int i = 0; i < rI; i++) {
+            createReward(card, offer);
+            pC = pC - pPR;
+        }
+
+        card.rewardsIssued = "0";
+        card.purchaseCount = Integer.toString(pC);
+    }
+
+
+
+    private void createReward(LoyaltyCard card, LoyaltyOffer offer) {
+        Log.d(TAG, "createReward: start");
+        LoyaltyReward reward = new LoyaltyReward(card.offerID, card.customerID, offer.reward, card.vendorID, card.retrieveCardID());
+        updateReward(reward);
+    }
+
     // creates a new card
     private void createCard(LoyaltyOffer offer, String customerID) {
         Log.d(TAG, "createCard: start");
         LoyaltyCard card = new LoyaltyCard(offer.getOfferID(), customerID, offer.purchasesPerReward);
         card.vendorID = mFirebaseAuth.getCurrentUser().getUid();
-        updateCard(card);
+        updateCard(card, offer);
         subscribeCardHolder(customerID);
         Log.d(TAG, "createCard: end");
     }
