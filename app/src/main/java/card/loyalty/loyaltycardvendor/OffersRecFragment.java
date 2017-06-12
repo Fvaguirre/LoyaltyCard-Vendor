@@ -4,12 +4,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,11 +31,13 @@ import java.util.List;
 import card.loyalty.loyaltycardvendor.adapters.LoyaltyOffersRecyclerAdapter;
 import card.loyalty.loyaltycardvendor.data_models.LoyaltyOffer;
 
+import static android.R.attr.tag;
+
 /**
  * Created by Caleb T on 3/05/2017.
  */
 
-public class OffersRecFragment extends Fragment implements RecyclerClickListener.OnRecyclerClickListener{
+public class OffersRecFragment extends Fragment implements RecyclerClickListener.OnRecyclerClickListener {
 
     private static final String TAG = "OffersRecFragment";
 
@@ -51,7 +56,11 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     // Firebase User ID
     private String mUid;
 
+    // Spinner for Offers Fragment
     private ProgressBar spinner;
+
+    // Button for Add offer fragment if no offers exist
+    private Button addOfferButton;
 
     // RecyclerView Objects
     protected RecyclerView recyclerView;
@@ -95,11 +104,27 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
         recyclerAdapter = new LoyaltyOffersRecyclerAdapter(mOffers);
         recyclerView.setAdapter(recyclerAdapter);
 
-        spinner = (ProgressBar)view.findViewById(R.id.card_spinner);
-        spinner.setVisibility(View.VISIBLE);
+        swap((ArrayList<LoyaltyOffer>) mOffers);
 
+        spinner = (ProgressBar) view.findViewById(R.id.card_spinner);
+        addOfferButton = (Button) view.findViewById(R.id.add_offer_button);
+        addOfferButton.setVisibility(View.GONE);
+        addOfferButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment current = null;
 
-        // Firebase AuthState Listener - stops null pointer problems with retrieve UID
+                current = new AddOfferFragment();
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.content_vendor, current)
+                        .addToBackStack(null)
+                        .commit();
+                swap((ArrayList<LoyaltyOffer>) mOffers);
+            }
+
+        });
+            // Firebase AuthState Listener - stops null pointer problems with retrieve UID
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -113,9 +138,11 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged: is signed_out");
+                    spinner.setVisibility(View.GONE);
                 }
             }
         };
+
 
         return view;
     }
@@ -124,6 +151,7 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     public void onResume() {
         super.onResume();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        swap((ArrayList<LoyaltyOffer>) mOffers);
     }
 
     @Override
@@ -133,6 +161,13 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         detachDatabaseReadListener();
     }
+    public void swap(ArrayList<LoyaltyOffer> mOffers){
+        mOffers.clear();
+        mOffers.addAll(mOffers);
+        recyclerAdapter.notifyDataSetChanged();
+    }
+
+
 
     // Database listener retrieves offers from Firebase and sets data to recycler view recyclerAdapter
     private void attachDatabaseReadListener() {
@@ -146,6 +181,7 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Log.d(TAG, "onDataChange started");
                     if (dataSnapshot.exists()) {
+                        recyclerAdapter.notifyDataSetChanged();
                         Log.d(TAG, "onDataChange: data change detected");
                         mOffers.clear();
                         for (DataSnapshot offerSnapshot : dataSnapshot.getChildren()) {
@@ -153,15 +189,21 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
                             offer.setOfferID(offerSnapshot.getKey());
                             mOffers.add(offer);
                             Log.d(TAG, "Current offer description: " + offer.purchasesPerReward);
+                            spinner.setVisibility(View.GONE);
+
                         }
                         recyclerAdapter.setOffers(mOffers);
                         ((VendorActivity) getActivity()).mOffers = mOffers;
-                        spinner.setVisibility(View.GONE);
                     } else {
                         // Removes
                         Log.d(TAG, "dataSnapshot doesn't exist");
-                        if(getFragmentManager().getBackStackEntryCount() > 0 ) {
+                        spinner.setVisibility(View.GONE);
+                        addOfferButton.setVisibility(View.VISIBLE);
+                        recyclerAdapter.notifyDataSetChanged();
+
+                        if (getFragmentManager().getBackStackEntryCount() > 0) {
                             getFragmentManager().popBackStack();
+
                         }
                     }
                 }
@@ -187,9 +229,11 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     // launch the scanner on click
     @Override
     public void onClick(View view, int position) {
-        ((VendorActivity) getActivity()).mOfferIndex = position;
-        ((VendorActivity) getActivity()).mWasLongPressed = false;
-        launchScanner();
+
+            ((VendorActivity) getActivity()).mOfferIndex = position;
+            ((VendorActivity) getActivity()).mWasLongPressed = false;
+            launchScanner();
+
     }
 
     // TODO add options for long click (redeem/sell multiple etc)
@@ -210,4 +254,6 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
         integrator.setBarcodeImageEnabled(false);
         integrator.initiateScan();
     }
+
 }
+
