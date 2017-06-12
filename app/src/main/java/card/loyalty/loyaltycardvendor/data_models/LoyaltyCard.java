@@ -1,5 +1,7 @@
 package card.loyalty.loyaltycardvendor.data_models;
 
+import android.util.Log;
+
 /**
  * Created by Sam on 25/04/2017.
  */
