@@ -109,7 +109,7 @@ public class PushPromotionFragmentTest {
     }
 
     /**
-     *  Tests that an invaled date throws an exception when checking that it is a passed date
+     *  Tests that an invalid date throws an exception when checking that it is a passed date
      */
     @Test (expected = ParseException.class)
     public void testInvalidPassedDate() throws ParseException {
