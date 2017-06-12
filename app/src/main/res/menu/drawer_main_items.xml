@@ -4,6 +4,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="none">
+        <!-- Redeems a customers reward -->
+        <item
+            android:id="@+id/nav_redeem"
+            android:title="Redeem"/>
         <!-- Offers -->
         <item
             android:id="@+id/nav_offers"

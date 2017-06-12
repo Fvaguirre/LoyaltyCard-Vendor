@@ -163,12 +163,41 @@ public class VendorActivity extends AppCompatActivity
                 if (result.getContents() == null) {
                     Toast.makeText(this, "You cancelled the scanning", Toast.LENGTH_LONG).show();
                 } else {
-                    Log.d(TAG, "onActivityResult: result.getContents(): " + result.getContents());
-                    LoyaltyOffer offer = mOffers.get(mOfferIndex);
-                    processScanResult(offer, result.getContents());
+
+                    if(result.getContents().contains("reward")) {
+                        redeemReward(result.getContents());
+                        Toast.makeText(this, "Reward Redeemed!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.d(TAG, "onActivityResult: result.getContents(): " + result.getContents());
+                        LoyaltyOffer offer = mOffers.get(mOfferIndex);
+                        processScanResult(offer, result.getContents());
+                    }
                 }
             }
         }
+    }
+
+    private void redeemReward(final String rewardID) {
+        Query query = mLoyaltyRewardsRef.orderByKey().equalTo(rewardID);
+
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    Log.d("!!!!!!!!!!!!!!", "hello");
+                    for(DataSnapshot r : dataSnapshot.getChildren()) {
+                        r.getRef().removeValue();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        query.addListenerForSingleValueEvent(listener);
     }
 
     // processes the result of scanning
@@ -253,7 +282,7 @@ public class VendorActivity extends AppCompatActivity
     private void updateReward(LoyaltyReward reward) {
         reward.addRewardsAvailable();
         if(reward.retrieveRewardID() == null) {
-            reward.setRewardID(mLoyaltyRewardsRef.push().getKey());
+            reward.setRewardID("reward_"+mLoyaltyRewardsRef.push().getKey());
             Log.d("!!!!!!!!!!!", reward.retrieveRewardID());
         }
         String key = reward.retrieveRewardID();
@@ -419,6 +448,9 @@ public class VendorActivity extends AppCompatActivity
 
         // Handle navigation view item clicks here.
         switch (item.getItemId()) {
+            case R.id.nav_redeem:
+                launchScanner();
+                break;
             case R.id.nav_offers:
                 // launches Offes Fragment
                 current = new OffersRecFragment();
@@ -454,6 +486,17 @@ public class VendorActivity extends AppCompatActivity
         // Closes drawer when item is pressed
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    // Launch the QR Scanner
+    private void launchScanner() {
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+        integrator.setPrompt("Scan");
+        integrator.setCameraId(0);
+        integrator.setBeepEnabled(false);
+        integrator.setBarcodeImageEnabled(false);
+        integrator.initiateScan();
     }
 
     private void launchVendorFragment() {
