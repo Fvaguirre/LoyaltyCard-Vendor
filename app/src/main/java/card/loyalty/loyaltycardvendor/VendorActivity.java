@@ -124,7 +124,7 @@ public class VendorActivity extends AppCompatActivity
                                     .createSignInIntentBuilder()
                                     .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                             new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-//                                    .setTheme(R.style.AppTheme_NoActionBar)
+                                    .setTheme(R.style.AppTheme_NoActionBar)
                                     .build(),
                             RC_SIGN_IN);
                 }
