@@ -231,7 +231,6 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     public void onClick(View view, int position) {
 
             ((VendorActivity) getActivity()).mOfferIndex = position;
-            ((VendorActivity) getActivity()).mWasLongPressed = false;
             launchScanner();
 
     }
@@ -240,7 +239,6 @@ public class OffersRecFragment extends Fragment implements RecyclerClickListener
     @Override
     public void onLongClick(View view, int position) {
         ((VendorActivity) getActivity()).mOfferIndex = position;
-        ((VendorActivity) getActivity()).mWasLongPressed = true;
         launchScanner();
     }
 

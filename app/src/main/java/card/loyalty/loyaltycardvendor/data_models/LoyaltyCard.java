@@ -65,13 +65,26 @@ public class LoyaltyCard {
     }
 
     // checks if reward should be issued
-    public void checkReward() {
+    public boolean checkReward() {
         int ppr = Integer.parseInt(purchasesPerReward);
         int pc = Integer.parseInt(purchaseCount);
         if (pc % ppr == 0) {
             int issued = Integer.parseInt(rewardsIssued);
             issued ++;
             this.rewardsIssued = Integer.toString(issued);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isRewardDue(){
+        int ppr = Integer.parseInt(purchasesPerReward);
+        int pc = Integer.parseInt(purchaseCount);
+        if (pc % ppr == 0) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

@@ -55,8 +55,6 @@ public class VendorActivity extends AppCompatActivity
     public DatabaseReference mLoyaltyRewardsRef;
     public DatabaseReference mSubscriptions;
 
-    // wasLongPressed used in determining whether redeeming reward or purchasing
-    public boolean mWasLongPressed;
 
     // List of Offers created
     public List<LoyaltyOffer> mOffers;
@@ -127,7 +125,7 @@ public class VendorActivity extends AppCompatActivity
                                     .createSignInIntentBuilder()
                                     .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                                             new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
-                                    .setTheme(R.style.AppTheme_NoActionBar)
+                                    .setTheme(R.style.AuthTheme)
                                     .build(),
                             RC_SIGN_IN);
                 }
@@ -166,7 +164,7 @@ public class VendorActivity extends AppCompatActivity
 
                     if(result.getContents().contains("reward")) {
                         redeemReward(result.getContents());
-                        Toast.makeText(this, "Reward Redeemed!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(this, "Reward Redeemed!", Toast.LENGTH_SHORT).show();
                     } else {
                         Log.d(TAG, "onActivityResult: result.getContents(): " + result.getContents());
                         LoyaltyOffer offer = mOffers.get(mOfferIndex);
@@ -186,7 +184,16 @@ public class VendorActivity extends AppCompatActivity
                 if(dataSnapshot.exists()) {
                     Log.d("!!!!!!!!!!!!!!", "hello");
                     for(DataSnapshot r : dataSnapshot.getChildren()) {
-                        r.getRef().removeValue();
+                        r.getRef().removeValue(new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                if (databaseError == null) {
+                                    Toast.makeText(VendorActivity.this, "Reward Redeemed!", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(VendorActivity.this, "Invalid!", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
                     }
                 }
             }
@@ -246,19 +253,11 @@ public class VendorActivity extends AppCompatActivity
         final Boolean redeem[] = new Boolean[1];
         redeem[0] = false;
         Log.d(TAG, "updateCard: start");
-        // if not long pressed add to purchase count, otherwise redeem reward
-        if (!mWasLongPressed) {
-            card.addToPurchaseCount(1);
-            checkIssueRewards(card, offer);
-            subscribeCardHolder(card.customerID);
-        } else {
-            // redeem reward or display toast message if nothing to redeem
-            redeem[0] = card.redeem();
-            if (!redeem[0]) {
-                Toast.makeText(this, "Nothing to Redeem!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
+
+        card.addToPurchaseCount(1);
+        checkIssueRewards(card, offer);
+        subscribeCardHolder(card.customerID);
+
         String key = card.retrieveCardID();
         if (key == null) key = mLoyaltyCardsRef.push().getKey();
         mLoyaltyCardsRef.child(key).setValue(card, new DatabaseReference.CompletionListener() {
@@ -301,18 +300,9 @@ public class VendorActivity extends AppCompatActivity
 
     // Checks whether a LoyaltyReward should be issued and the amount of Rewards that should be issued
     private void checkIssueRewards(LoyaltyCard card, LoyaltyOffer offer) {
-
-        int rI = Integer.parseInt(card.rewardsIssued);
-        int pC = Integer.parseInt(card.purchaseCount);
-        int pPR = Integer.parseInt(card.purchasesPerReward);
-
-        for(int i = 0; i < rI; i++) {
+        if (card.isRewardDue()) {
             createReward(card, offer);
-            pC = pC - pPR;
         }
-
-        card.rewardsIssued = "0";
-        card.purchaseCount = Integer.toString(pC);
     }
 
 
