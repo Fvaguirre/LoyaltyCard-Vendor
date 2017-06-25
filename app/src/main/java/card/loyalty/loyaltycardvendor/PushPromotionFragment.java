@@ -99,7 +99,6 @@ public class PushPromotionFragment extends Fragment {
         mSubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // Regex match to make sure date is valid
                 if (!validateDate(mExpiryDate.getText().toString())) {
                     Toast.makeText(getContext(), "Invalid Date", Toast.LENGTH_SHORT).show();

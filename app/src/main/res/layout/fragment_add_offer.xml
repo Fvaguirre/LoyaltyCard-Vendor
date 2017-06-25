@@ -97,57 +97,58 @@
 
 
             <!-- REWARD FIELD -->
-            <LinearLayout
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="Reward"
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/field_label_size" />
+
+            <EditText
+                android:id="@+id/offer_reward"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="8dp">
+                android:layout_marginEnd="-4dp"
+                android:layout_marginStart="-4dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:hint="Reward Description"
+                android:inputType="textMultiLine"
+                android:maxLength="50" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:text="Reward"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="@dimen/field_label_size" />
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:gravity="right|center_vertical"
+                android:maxHeight="100dp"
+                android:maxWidth="100dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/upload_placeholder" />
 
-                <EditText
-                    android:id="@+id/offer_reward"
-                    android:hint="Reward Description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="-4dp"
-                    android:layout_marginEnd="-4dp"
-                    android:backgroundTint="@color/colorPrimary"
-                    android:inputType="textMultiLine"
-                    android:maxLength="50" />
 
-                <Button
-                    android:id="@+id/btn_choose_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginRight="75dp"
-                    android:layout_marginLeft="75dp"
-                    android:background="@drawable/rounded_button"
-                    android:minHeight="40dp"
-                    android:text="Choose Image"
-                    android:textColor="#FFFFFF" />
-
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="right|center_vertical"
-                    android:maxHeight="100dp"
-                    android:maxWidth="100dp"
-                    android:src="@drawable/upload_placeholder"
-                    android:scaleType="centerInside"
-                    android:adjustViewBounds="true"/>
-
-            </LinearLayout>
+            <Button
+                android:id="@+id/btn_choose_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="75dp"
+                android:layout_marginRight="75dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/rounded_button"
+                android:minHeight="40dp"
+                android:text="Choose Image"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
 
         <!-- BUTTON CONTAINER -->
         <LinearLayout
